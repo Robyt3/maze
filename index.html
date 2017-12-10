@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Maze</title>
+		<link type="text/css" href="maze.css" rel="stylesheet">
+		<meta name="viewport" content="width=device-width">
+	</head>
+	<body>
+		<canvas id="canvas">Canvas is not supported by your browser.</canvas>
+		<div id="dialog-wrapper">
+			<div class="dialog" id="dialog-colorFunction">
+				<span class="dialog-title">Color function</span>
+				<label for="colorFunctionPresets">Load a preset: </label><select id="colorFunctionPresets"></select>
+				<button id="colorFunctionPresetLoad">Load</button>
+				<ul>
+					<li>0.0 &le; <b>c</b> &lt; 1.0 is the color and increases over time, faster for a smaller color factor. At 1.0 it wraps around to 0.0 again.</li>
+					<li>0.0 &le; <b>x</b> &lt; 1.0 is the relative x position, 0.0 being left.</li>
+					<li>0.0 &le; <b>y</b> &lt; 1.0 is the relative y position, 0.0 being top.</li>
+				</ul>
+				<pre>function customColorFunction(c, x, y)<br>{</pre>
+				<textarea id="colorFunction"></textarea>
+				<pre>}</pre>
+				<div class="controls">
+					<button class="cancel-button">Cancel</button>
+					<button id="checkSyntax">Check syntax</button>
+					<button class="confirm-button">Confirm</button>
+				</div>
+				<output id="checkSyntaxResult" for="checkSyntax"></output>
+			</div>
+		</div>
+		<div id="floatingBox"></div>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.js"></script>
+		<script type="text/javascript" src="maze.js"></script>
+		<script type="text/javascript" src="colorfunctions.js"></script>
+		<script type="text/javascript" src="dat.gui.min.js"></script>
+		<script type="text/javascript" src="maze-gui.js"></script>
+	</body>
+</html>

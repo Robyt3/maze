@@ -1,0 +1,106 @@
+html, #canvas, body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	color: #000;
+	overflow: hidden;
+	font-family: Arial,Helvetica,Verdana,sans-serif;
+	font-size: 100%;
+}
+
+#dialog-wrapper {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: rgba(0,0,0,0.8);
+	display: none;
+	z-index: 1;
+}
+
+.dialog {
+	position: absolute;
+	width: 600px;
+	top: 20%;
+	left: 50%;
+	margin: 0 0 0 -300px;
+	background: white;
+	padding: 15px;
+	border: 1px solid #cccccc;
+	display: none;
+}
+
+.dialog-title {
+    width: 100%;
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.dialog .controls {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.controls .confirm-button {
+    font-weight: bold;
+}
+
+.controls button {
+    flex-grow: 1;
+}
+
+.dialog button {
+    background: #222;
+    padding: 10px 20px;
+    color: #fff;
+}
+
+.dialog button:active {
+	background: #666;
+	color: #000;
+}
+
+.dialog button:hover, .dialog button:focus {
+	background: #333;
+}
+
+textarea#colorFunction {
+	width: 95%;
+	width: calc(100%-20px);
+	resize: vertical;
+	margin-left: 20px;
+	height: 140px;
+	resize: vertical;
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+}
+
+#checkSyntaxResult {
+	display: inline-block;
+	margin-top: 10px;
+}
+
+.dg.a {
+	margin-right: 0 !important;
+}
+
+.wait {
+	cursor: wait !important;
+}
+
+#floatingBox {
+	background: #fff;
+	color: #000;
+	border: 1px solid;
+	margin: 15px;
+	padding: 5px;
+	position: fixed;
+	display: none;
+}
