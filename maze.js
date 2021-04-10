@@ -1,4 +1,4 @@
-(function(maze, $, undefined) {
+(function(maze, undefined) {
 
 	// cross-browser support for requestAnimationFrame and cancelAnimationFrame
 	var requestAnimFrame = window.requestAnimationFrame
@@ -14,13 +14,15 @@
 		|| window.msCancelRequestAnimationFrame || window.msCancelAnimationFrame
 		|| function(id) { clearTimeout(id); };
 
-	var Direction = function(x, y) {
-		this.x = x;
-		this.y = y;
-	}
-	Direction.prototype.isOpposite = function(other) {
-		return (this.x != 0 && this.x == -other.x)
-			|| (this.y != 0 && this.y == -other.y);
+	class Direction {
+		constructor(x, y) {
+			this.x = x;
+			this.y = y;
+		}
+		isOpposite(other) {
+			return (this.x != 0 && this.x == -other.x)
+				|| (this.y != 0 && this.y == -other.y);
+		}
 	}
 	Direction.NONE 	= new Direction(0, 0);
 	Direction.RIGHT = new Direction(1, 0);
@@ -28,28 +30,28 @@
 	Direction.UP 	= new Direction(0, -1);
 	Direction.DOWN 	= new Direction(0, 1);
 
-	var Cell = function(x, y, color, fromDir) {
-		this.x = x;
-		this.y = y;
-		this.color = color;
-		this.fromDir = fromDir;
+	class Cell {
+		constructor(x, y, color, fromDir) {
+			this.x = Math.floor(x);
+			this.y = Math.floor(y);
+			this.color = color || 0;
+			this.fromDir = fromDir || Direction.NONE;
+		}
 	}
 
-	var Settings = function(guiSettings) {
-		this.startX = guiSettings.startX;
-		this.startY = guiSettings.startY;
-		this.blockSize = Math.floor(guiSettings.blockSize);
-		this.cellDistance = Math.floor(guiSettings.cellDistance);
-		this.directionShuffleProbability = guiSettings.directionShuffleProbability;
-		this.disallowSameDirection = guiSettings.disallowSameDirection;
-		this.circleProbability = guiSettings.circleProbability;
-		this.backgroundColor = guiSettings.backgroundColor;
-		this.colorFactor = Math.floor(guiSettings.colorFactor);
-		this.colorFunction = guiSettings.colorFunction;
-	}
-	Settings.prototype = {
-		get border() {
-			return this.cellDistance == 1 ? 0 : 1;
+	class Settings {
+		constructor(guiSettings) {
+			this.startX = guiSettings.startX;
+			this.startY = guiSettings.startY;
+			this.blockSize = Math.floor(guiSettings.blockSize);
+			this.cellDistance = Math.floor(guiSettings.cellDistance);
+			this.directionShuffleProbability = guiSettings.directionShuffleProbability;
+			this.disallowSameDirection = guiSettings.disallowSameDirection;
+			this.circleProbability = guiSettings.circleProbability;
+			this.backgroundColor = guiSettings.backgroundColor;
+			this.colorFactor = Math.floor(guiSettings.colorFactor);
+			this.colorFunction = guiSettings.colorFunction;
+			this.border = this.cellDistance == 1 ? 0 : 1;
 		}
 	}
 
@@ -124,9 +126,10 @@
 	function initGeneration() {
 		// put starting position on the stack
 		dfsStack = new Array();	
-		var border = settings.border;
-		dfsStack.push(new Cell(Math.floor(settings.startX * (width - 2*border - 1) + border),
-			Math.floor(settings.startY * (height - 2*border - 1) + border), 0, Direction.NONE));
+		const border = settings.border;
+		dfsStack.push(new Cell(
+			settings.startX * (width - 2*border - 1) + border,
+			settings.startY * (height - 2*border - 1) + border));
 
 		directions = [ Direction.RIGHT, Direction.LEFT, Direction.UP, Direction.DOWN ];
 	}
@@ -160,7 +163,10 @@
 		if(cell.fromDir !== Direction.NONE) {
 			for(var i = 1; i < settings.cellDistance; i++) {
 				// minus fromDir, since the directions points from old to new position (p is the new position)
-				var intermediate = new Cell(cell.x - i * cell.fromDir.x, cell.y - i * cell.fromDir.y, color);
+				var intermediate = new Cell(
+					cell.x - i * cell.fromDir.x,
+					cell.y - i * cell.fromDir.y,
+					color);
 				data[intermediate.y][intermediate.x] = intermediate;
 				changedCells.push(intermediate);
 				color++;
@@ -201,7 +207,7 @@
 			if(newY < settings.border || newY >= height - settings.border)
 				continue;
 
-			dfsStack.push(new Cell(newX, newY, color, d))
+			dfsStack.push(new Cell(newX, newY, color, d));
 		}
 
 		return true;
@@ -291,8 +297,4 @@
 	maze.setRunning = function(_running) {
 		running = _running;
 	}
-
-	maze.isRunning = function() {
-		return running;
-	}
-}(window.maze = window.maze || {}, jQuery));
+}(window.maze = window.maze || {}));
