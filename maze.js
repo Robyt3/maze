@@ -1,12 +1,12 @@
 (function(maze, undefined) {
 
 	// cross-browser support for requestAnimationFrame and cancelAnimationFrame
-	var requestAnimFrame = window.requestAnimationFrame
+	const requestAnimFrame = window.requestAnimationFrame
 		|| window.webkitRequestAnimationFrame
 		|| window.msRequestAnimationFrame
 		|| window.mozRequestAnimationFrame
 		|| function(callback) { return window.setTimeout(callback, 1000 / 60); };
-	var cancelAnimFrame = window.cancelAnimationFrame
+	const cancelAnimFrame = window.cancelAnimationFrame
 		|| window.webkitCancelRequestAnimationFrame
 		|| window.webkitCancelAnimationFrame
 		|| window.mozCancelRequestAnimationFrame || window.mozCancelAnimationFrame
@@ -55,24 +55,24 @@
 		}
 	}
 
-	var settings;
-	var updatesPerFrame;
-	var running;
+	let settings;
+	let updatesPerFrame;
+	let running;
 	// array for the direction that the maze expands in
 	// the first direction is taken first (if possible)
-	var directions;
-	var animFrameReqId = null;
+	let directions;
+	let animFrameReqId;
 
-	var data;
-	var width;
-	var height;
-	var dfsStack;
+	let data;
+	let width;
+	let height;
+	let dfsStack;
 
-	var canvas;
-	var context;
-	var bufferCanvas;
-	var bufferContext;
-	var changedCells = new Array();
+	let canvas;
+	let context;
+	let bufferCanvas;
+	let bufferContext;
+	let changedCells = new Array();
 
 	/**
 	 * Shuffles array in place.
@@ -80,21 +80,18 @@
 	 * @param {Array} a items The array containing the items.
 	 */
 	function shuffle(a) {
-		var j, x, i;
-		for(i = a.length; i; i--) {
-			j = Math.floor(Math.random() * i);
-			x = a[i - 1];
+		for(let i = a.length; i; i--) {
+			let j = Math.floor(Math.random() * i);
+			let x = a[i - 1];
 			a[i - 1] = a[j];
 			a[j] = x;
 		}
 	}
 
 	function initCanvas() {
-		canvas = document.getElementById("canvas");
 		bufferCanvas = document.createElement("canvas");
 
 		[canvas, bufferCanvas].forEach(can => {
-			can.mozOpaque = true;
 			can.width = window.innerWidth;
 			can.height = window.innerHeight;
 		});
@@ -103,8 +100,7 @@
 		bufferContext = bufferCanvas.getContext("2d");
 
 		[context, bufferContext].forEach(ctx => {
-			ctx.webkitImageSmoothingEnabled = false;
-			ctx.mozImageSmoothingEnabled = false;
+			ctx.msImageSmoothingEnabled = false;
 			ctx.imageSmoothingEnabled = false;
 		});
 	}
@@ -115,9 +111,9 @@
 
 		data = new Array(height);
 		changedCells.length = 0;
-		for(var y = 0; y < height; y++) {
+		for(let y = 0; y < height; y++) {
 			data[y] = new Array(width);
-			for(var x = 0; x < width; x++) {
+			for(let x = 0; x < width; x++) {
 				data[y][x] = null;
 			}
 		}
@@ -134,16 +130,19 @@
 		directions = [ Direction.RIGHT, Direction.LEFT, Direction.UP, Direction.DOWN ];
 	}
 
-	maze.performStep = function() {
-		var cell;
-		var makeCircle = false;
+	function addCell(cell) {
+		data[cell.y][cell.x] = cell;
+		changedCells.push(cell);
+	}
 
+	maze.performStep = function() {
 		// get next cell
+		let cell;
+		let makeCircle = false;
 		while(true) {
 			if(dfsStack.length == 0) {
 				return false;
 			}
-
 			cell = dfsStack.pop();
 			if(data[cell.y][cell.x] != null) {
 				if(Math.random() < settings.circleProbability && settings.cellDistance > 1) {
@@ -152,23 +151,20 @@
 					continue;
 				}
 			}
-
 			// only one element per update
 			break;
 		}
 
-		var color = cell.color;
+		let color = cell.color;
 
 		// draw the intermediate cells
 		if(cell.fromDir !== Direction.NONE) {
-			for(var i = 1; i < settings.cellDistance; i++) {
-				// minus fromDir, since the directions points from old to new position (p is the new position)
-				var intermediate = new Cell(
+			for(let i = 1; i < settings.cellDistance; i++) {
+				// minus fromDir, as the directions points from old to new position (p is the new position)
+				addCell(new Cell(
 					cell.x - i * cell.fromDir.x,
 					cell.y - i * cell.fromDir.y,
-					color);
-				data[intermediate.y][intermediate.x] = intermediate;
-				changedCells.push(intermediate);
+					color));
 				color++;
 			}
 		}
@@ -177,8 +173,7 @@
 		if(makeCircle)
 			return true;
 
-		data[cell.y][cell.x] = cell;
-		changedCells.push(cell);
+		addCell(cell);
 		color++;
 
 		// shuffle directions
@@ -187,27 +182,20 @@
 
 		// expand maze in all directions
 		// opposite order so that the first element will be the top-most on the stack
-		for(var i = directions.length-1; i >= 0; i--) {
-			var d = directions[i];
-
+		for(let i = directions.length-1; i >= 0; i--) {
 			// no need to check the direction that we are coming from
-			if(d.isOpposite(cell.fromDir))
+			if(directions[i].isOpposite(cell.fromDir))
 				continue;
-
 			// disallow continuing in the same direction
-			if(settings.disallowSameDirection && d === cell.fromDir)
+			if(settings.disallowSameDirection && directions[i] === cell.fromDir)
 				continue;
-
-			var newX = cell.x + settings.cellDistance * d.x;
-			var newY = cell.y + settings.cellDistance * d.y;
-
-			// check if next position is outside of canvas
+			const newX = cell.x + settings.cellDistance * directions[i].x;
 			if(newX < settings.border || newX >= width - settings.border)
 				continue;
+			const newY = cell.y + settings.cellDistance * directions[i].y;
 			if(newY < settings.border || newY >= height - settings.border)
 				continue;
-
-			dfsStack.push(new Cell(newX, newY, color, d));
+			dfsStack.push(new Cell(newX, newY, color, directions[i]));
 		}
 
 		return true;
@@ -223,8 +211,8 @@
 		settings.colorFactor = guiSettings.colorFactor;
 		settings.colorFunction = guiSettings.colorFunction;
 
-		for(var y = 0; y < height; y++) {
-			for(var x = 0; x < width; x++) {
+		for(let y = 0; y < height; y++) {
+			for(let x = 0; x < width; x++) {
 				if(data[y][x] != null) {
 					drawCell(data[y][x]);
 				}
@@ -257,7 +245,7 @@
 
 	function updateAndDrawFrame() {
 		if(running) {
-			for(var i = 0; i < updatesPerFrame; i++) {
+			for(let i = 0; i < updatesPerFrame; i++) {
 				if(!maze.performStep()) {
 					break;
 				}
@@ -278,14 +266,10 @@
 		initGeneration();
 
 		// start the draw-loop
-		if(animFrameReqId != null) {
+		if(animFrameReqId !== undefined) {
 			cancelAnimFrame(animFrameReqId);
 		}
 		animFrameReqId = requestAnimFrame(updateAndDrawFrame);
-	}
-
-	maze.setSpeed = function(_updatesPerFrame) {
-		updatesPerFrame = Math.min(Math.max(_updatesPerFrame, 1), 10000);
 	}
 
 	maze.completeGeneration = function() {
@@ -297,4 +281,13 @@
 	maze.setRunning = function(_running) {
 		running = _running;
 	}
+
+	maze.setSpeed = function(_updatesPerFrame) {
+		updatesPerFrame = Math.min(Math.max(_updatesPerFrame, 1), 10000);
+	}
+
+	maze.setCanvas = function(canvasElement) {
+		canvas = canvasElement;
+	}
+
 }(window.maze = window.maze || {}));

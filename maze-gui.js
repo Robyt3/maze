@@ -1,24 +1,20 @@
 (function($) {
 
-	function replaceAll(target, search, replacement) {
-		return target.replace(new RegExp(search, "g"), replacement);
-	};
-
 	function createSandboxedColorFunction(code) {
-		var frame = document.getElementById("sandbox");
+		let frame = document.getElementById("sandbox");
 		if(frame == null) {
-			var frame = document.createElement("iframe");
+			frame = document.createElement("iframe");
 			frame.src = "about:blank";
 			frame.style.display = "none";
 			frame.id = "sandbox";
 			document.body.appendChild(frame);
 		}
-
-		var F = frame.contentWindow.Function;
-		return new F("c", "x", "y", code);
+		return new frame.contentWindow.Function("c", "x", "y", code);
 	};
 
-	var settings = {
+	const colorFunctionInput = document.getElementById("colorFunction");
+
+	const settings = {
 		running : true,
 		speed : 100,
 		performStep : maze.performStep,
@@ -61,33 +57,35 @@
 		circleProbability : 0.0,
 		backgroundColor : "#000000",
 		colorFactor : 3600,
-		colorFunction : function(c, x, y) {
-			return "hsl(" + (c * 360.0) + ", 100%, 50%)";
-		},
 		colorFunctionPreset : "rainbow",
+		colorFunction : colorFunctions.rainbow,
 		changeColorFunction : function() {
 			$("#colorFunctionPresets").empty();
 			Object.keys(colorFunctions).forEach((key, index) => $("#colorFunctionPresets").append("<option>" + key + "</option>"));
 			$("#colorFunctionPresetLoad").off("click").on("click", () => {
-				var f = colorFunctions[$("#colorFunctionPresets").val()].toString();
-				var b = f.slice(f.indexOf("{") + 1, f.lastIndexOf("}"));
-				$("#colorFunction").val(replaceAll(b, "\n\t\t", "\n").trim());
+				const functionDefinition = colorFunctions[$("#colorFunctionPresets").val()].toString();
+				const functionBody = functionDefinition.slice(functionDefinition.indexOf("{") + 1, functionDefinition.lastIndexOf("}"));
+				colorFunctionInput.value = functionBody.replace(new RegExp("\n\t\t", "g"), "\n").trim(); // remove tabs at beginnings of lines
 			});
-			$("#dialog-wrapper, #dialog-colorFunction").fadeIn();
-			$(".cancel-button").off("click").on("click", $("#dialog-wrapper, .dialog").fadeOut);
+			$("#dialog-wrapper, .dialog").fadeIn();
+			$(".cancel-button").off("click").on("click", event => {
+				$("#dialog-wrapper, .dialog").fadeOut();
+				event.stopPropagation();
+			});
 			function checkSyntax() {
+				const resultElement = document.getElementById("checkSyntaxResult");
 				try {
-					var f = createSandboxedColorFunction($("#colorFunction").val());
-					var testVal = f(0, 0, 0); // not really an in-depth test...
+					const sandboxedFunction = createSandboxedColorFunction(colorFunctionInput.value);
+					const testVal = sandboxedFunction(0, 0, 0); // not really an in-depth test...
 					if(testVal == undefined || typeof testVal != "string") {
-						$("#checkSyntaxResult").html('<span style="color: red">The function has to return a string.</span>');
+						resultElement.innerHTML = '<span style="color: red">The function has to return a string.</span>';
 						return false;
 					} else {
-						$("#checkSyntaxResult").html('<span style="color: green">Syntax is valid.</span>');
+						resultElement.innerHTML = '<span style="color: green">Syntax is valid.</span>';
 						return true;
 					}
 				} catch(e) {
-					$("#checkSyntaxResult").html('<span style="color: red">' + e + '</span>');
+					resultElement.innerHTML = '<span style="color: red">' + e + '</span>';
 					return false;
 				}
 			};
@@ -96,7 +94,7 @@
 				if(checkSyntax()) {
 					$("#dialog-wrapper, .dialog").fadeOut();
 					settings.colorFunctionPreset = "custom";
-					settings.colorFunction = createSandboxedColorFunction($("#colorFunction").val());
+					settings.colorFunction = createSandboxedColorFunction(colorFunctionInput.value);
 				}
 			});
 		},
@@ -116,9 +114,9 @@
 		}
 	};
 
-	var gui = new dat.gui.GUI({ width: 400 });
+	const gui = new dat.GUI({ width: 400 });
 
-	var folderGeneration = gui.addFolder("Generation");
+	const folderGeneration = gui.addFolder("Generation");
 	folderGeneration.add(settings, "running").name("Running [Space]").listen().onChange(() => maze.setRunning(settings.running));
 	folderGeneration.add(settings, "speed").min(1).max(1000).step(1).name("Speed [+/-]").listen().onChange(() => maze.setSpeed(settings.speed));
 	folderGeneration.add(settings, "performStep").name("Perform single step [S]");
@@ -126,8 +124,8 @@
 	folderGeneration.add(settings, "startMaze").name("Start/Restart generation [R]");
 	folderGeneration.open();
 
-	var folderSettings = gui.addFolder("Settings");
-	var folderSettingsStartPosition = folderSettings.addFolder("Start position");
+	const folderSettings = gui.addFolder("Settings");
+	const folderSettingsStartPosition = folderSettings.addFolder("Start position");
 	folderSettingsStartPosition.add(settings, "startX").min(0).max(1).step(0.0001).name("X");
 	folderSettingsStartPosition.add(settings, "startY").min(0).max(1).step(0.0001).name("Y");
 	folderSettingsStartPosition.add(settings, "pickStartPosition").name("Pick start position");
@@ -138,10 +136,10 @@
 	folderSettings.add(settings, "circleProbability").min(0.0).max(1.0).step(0.001).name("Circle probability");
 	folderSettings.open();
 
-	var folderColors = gui.addFolder("Colors");
+	const folderColors = gui.addFolder("Colors");
 	folderColors.addColor(settings, "backgroundColor").name("Background color");
 	folderColors.add(settings, "colorFactor").min(0).step(1).name("Color factor");
-	var colorFuncs = Object.keys(colorFunctions);
+	const colorFuncs = Object.keys(colorFunctions);
 	colorFuncs.push("custom");
 	folderColors.add(settings, "colorFunctionPreset", colorFuncs).name("Color function").onChange(value => {
 		if(value == "custom") {
@@ -157,6 +155,7 @@
 	gui.add(settings, "viewSource").name("Show source code on GitHub");
 
 	const canvas = document.getElementById("canvas");
+	maze.setCanvas(canvas);
 	canvas.addEventListener("keypress", event => {
 		if(event.key == " ") {
 			settings.running = !settings.running;
@@ -177,15 +176,12 @@
 
 	// enable tabs in the color function textarea
 	// https://stackoverflow.com/a/6140696
-	$("#colorFunction").keydown(function(e) {
-		if(e.keyCode === 9) { // tab was pressed
-			// set textarea value to: text before caret + tab + text after caret
-			$(this).val($(this).val().substring(0, this.selectionStart)
-				+ "\t" + $(this).val().substring(this.selectionEnd));
-
-			// put caret at right position again (add one for the tab)
-			this.selectionStart = this.selectionEnd = this.selectionStart + 1;
-			e.preventDefault();
+	colorFunctionInput.addEventListener("keydown", event => {
+		if(event.keyCode === 9) { // tab
+			const target = event.target;
+			target.value = target.value.substring(0, target.selectionStart) + "\t" + target.value.substring(target.selectionEnd);
+			target.selectionStart = target.selectionEnd = target.selectionStart + 1;
+			event.preventDefault();
 		}
 	});
 
