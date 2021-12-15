@@ -17,20 +17,19 @@ body {
 	left: 0;
 	right: 0;
 	background: rgba(0,0,0,0.8);
-	display: none;
+	display: block;
 	z-index: 1;
 }
 
 .dialog {
-	position: absolute;
-	width: 600px;
-	top: 20%;
-	left: 50%;
-	margin: 0 0 0 -300px;
+	width: 800px;
+	min-width: 800px;
+	max-width: 80%;
+	margin: 10% auto 0 auto;
 	background: white;
 	padding: 15px;
 	border: 1px solid #cccccc;
-	display: none;
+	display: table; /* so the dialog changes size when textarea is resized */
 }
 
 .dialog-title {
@@ -71,12 +70,12 @@ body {
 }
 
 textarea#colorFunction {
-	width: 95%;
-	width: calc(100%-20px);
-	resize: vertical;
-	margin-left: 20px;
+	width: 98%;
+	min-width: 98%;
+	resize: both;
+	margin-left: 1%;
+	margin-right: 1%;
 	height: 140px;
-	resize: vertical;
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
 	tab-size: 4;

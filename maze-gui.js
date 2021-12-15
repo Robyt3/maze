@@ -67,9 +67,9 @@
 				const functionBody = functionDefinition.slice(functionDefinition.indexOf("{") + 1, functionDefinition.lastIndexOf("}"));
 				colorFunctionInput.value = functionBody.replace(new RegExp("\n\t\t", "g"), "\n").trim(); // remove tabs at beginnings of lines
 			});
-			$("#dialog-wrapper, .dialog").fadeIn();
+			$("#dialog-wrapper").fadeIn();
 			$(".cancel-button").off("click").on("click", event => {
-				$("#dialog-wrapper, .dialog").fadeOut();
+				$("#dialog-wrapper").fadeOut();
 				event.stopPropagation();
 			});
 			function checkSyntax() {
@@ -92,7 +92,7 @@
 			$("#checkSyntax").off("click").on("click", checkSyntax);
 			$("#dialog-colorFunction .confirm-button").off("click").on("click", () => {
 				if(checkSyntax()) {
-					$("#dialog-wrapper, .dialog").fadeOut();
+					$("#dialog-wrapper").fadeOut();
 					settings.colorFunctionPreset = "custom";
 					settings.colorFunction = createSandboxedColorFunction(colorFunctionInput.value);
 				}
