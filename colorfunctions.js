@@ -50,6 +50,18 @@ window.colorFunctions = {
 		var light = c * 65 + 20;
 		return "hsl(" + hue + ", 100%, " + light + "%)";
 	},
+	rainbowInverseXYCamo : function(c, x, y)
+	{
+		var hue = 1/(0.0000001+x) * 1/(0.0000001+y) * 360;
+		var light = c * 65 + 20;
+		return "hsl(" + hue + ", 100%, " + light + "%)";
+	},
+	rainbowLogInverseXYCamo : function(c, x, y)
+	{
+		var hue = Math.log(1/(0.0000001+x)) * Math.log(1/(0.0000001+y)) * 360;
+		var light = c * 65 + 20;
+		return "hsl(" + hue + ", 100%, " + light + "%)";
+	},
 	rainbowRadiusCamo : function(c, x, y)
 	{
 		var radius = Math.sqrt(Math.pow(x - 0.5, 2) + Math.pow(y - 0.5, 2));
