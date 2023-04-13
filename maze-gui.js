@@ -110,7 +110,7 @@
 			maze.start(settings);
 		},
 		viewSource : function() {
-			window.location.href = "https://github.com/Robyt3/maze";
+			window.open("https://github.com/Robyt3/maze", '_blank').focus();
 		}
 	};
 
